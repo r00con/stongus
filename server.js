@@ -1,1 +1,31 @@
-const express = require("express");const http = require("http");const { Server } = require("socket.io");const app = express();const server = http.createServer(app);const io = new Server(server);app.use(express.static(__dirname));const users = {  LockedIn: { money: 100, stocks: [] },  ragavan67: { money: 100, stocks: [] },  Htraddis_1909: { money: 100, stocks: [] },  r00congup: { money: 100, stocks: [] },  haolie: { money: 100, stocks: [] }};io.on("connection", (socket) => {  socket.emit("state", users);  socket.on("update", ({ user, money, stocks }) => {    users[user].money = money;    users[user].stocks = stocks;    io.emit("state", users);  });});server.listen(3000, () => {  console.log("Stongus server running on http://localhost:3000");});
+const express = require("express");
+const path = require("path");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Serve static files (html, images, css, js)
+app.use(express.static(__dirname));
+
+// ROOT → landing page
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "landing.html"));
+});
+
+// Optional pages (for later navigation)
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "login.html"));
+});
+
+app.get("/game", (req, res) => {
+  res.sendFile(path.join(__dirname, "gamepage.html"));
+});
+
+app.get("/friends", (req, res) => {
+  res.sendFile(path.join(__dirname, "friends.html"));
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
+});
