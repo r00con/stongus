@@ -8,7 +8,7 @@ body{
   margin:0;
   font-family:'Press Start 2P';
   background:
-    linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.75)),
+    linear-gradient(rgba(0,0,0,.8),rgba(0,0,0,.8)),
     url("background.png") center/cover fixed;
   color:white;
 }
@@ -16,19 +16,18 @@ body{
   display:flex;
   justify-content:space-between;
   padding:12px;
-  background:rgba(0,0,0,.85);
+  background:rgba(0,0,0,.9);
 }
 .grid{
+  padding:20px;
   display:grid;
   grid-template-columns:repeat(auto-fill,220px);
   gap:15px;
-  padding:20px;
 }
 .card{
   border:4px solid #333;
   padding:15px;
-  background:rgba(0,0,0,.8);
-  cursor:pointer;
+  background:rgba(0,0,0,.85);
 }
 </style>
 </head>
@@ -37,35 +36,36 @@ body{
 <div class="top">
   <span id="user"></span>
   <span>$<span id="money"></span>
-  <button onclick="friends()">Friends</button></span>
+  <button onclick="friends()">Friends</button>
+  <button onclick="logout()">Logout</button></span>
 </div>
 
 <div class="grid" id="stocks"></div>
 
 <script>
-const user=localStorage.getItem("stongus_user");
-if(!user)location.href="landing.html";
+const user = localStorage.getItem("user");
+if(!user) location.href="landing.html";
 document.getElementById("user").innerText=user;
 
 async function load(){
-  const prices=await (await fetch("/stocks")).json();
-  const me=await (await fetch(`/player?user=${user}`)).json();
-  document.getElementById("money").innerText=me.money;
+  const prices = await (await fetch("/stocks")).json();
+  const me = await (await fetch(`/player?user=${user}`)).json();
+  document.getElementById("money").innerText = me.money;
 
-  const box=document.getElementById("stocks");
-  box.innerHTML="";
+  const grid=document.getElementById("stocks");
+  grid.innerHTML="";
   Object.keys(prices).forEach(s=>{
     const d=document.createElement("div");
     d.className="card";
     d.innerHTML=`${s}<br>$${prices[s]}`;
-    d.onclick=()=>{
-      localStorage.setItem("stongus_selected_stock",s);
-      location.href="stockspage.html";
-    };
-    box.appendChild(d);
+    grid.appendChild(d);
   });
 }
 function friends(){location.href="friends.html";}
+function logout(){
+  localStorage.clear();
+  location.href="landing.html";
+}
 load();
 </script>
 </body>
