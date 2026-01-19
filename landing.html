@@ -6,10 +6,10 @@
 <style>
 body{
   margin:0;
-  font-family:'Press Start 2P',cursive;
+  font-family:'Press Start 2P';
   background:
     linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.75)),
-    url("background.png") center/cover no-repeat fixed;
+    url("background.png") center/cover fixed;
   color:white;
 }
 .panel{
@@ -18,14 +18,11 @@ body{
   text-align:center;
   border:4px solid #333;
   padding:30px;
-  background:rgba(0,0,0,.75);
+  background:rgba(0,0,0,.8);
 }
-button{
+input,button{
   font-family:'Press Start 2P';
-  padding:10px 20px;
-  background:#2ecc71;
-  border:none;
-  cursor:pointer;
+  padding:10px;
 }
 </style>
 </head>
@@ -33,12 +30,17 @@ button{
 
 <div class="panel">
   <h1>Stongus</h1>
+  <input id="name" placeholder="Username">
+  <br><br>
   <button onclick="go()">Login</button>
   <p>Dedicated to 5 Ding Dongs</p>
 </div>
 
 <script>
 function go(){
+  const u=document.getElementById("name").value.trim();
+  if(!u)return;
+  localStorage.setItem("stongus_user",u);
   location.href="gamepage.html";
 }
 </script>
