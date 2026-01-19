@@ -1,1 +1,46 @@
-<!DOCTYPE html><html><head>  <title>Stongus</title>  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">  <style>    body {      margin: 0;      height: 100vh;      font-family: 'Press Start 2P', cursive;      background:        linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),        url('background.png') no-repeat center center;      background-size: contain;      color: white;      display: flex;      justify-content: center;      align-items: center;      text-align: center;    }    button {      margin: 30px 0;      padding: 15px 30px;      font-family: 'Press Start 2P', cursive;      font-size: 16px;      cursor: pointer;    }  </style></head><body><div>  <h1>Stongus</h1>  <button onclick="window.location.href='login.html'">    LOGIN  </button>  <p>Dedicated to 5 Ding Dongs</p></div></body></html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Stongus</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+body{
+  margin:0;
+  font-family:'Press Start 2P',cursive;
+  background:
+    linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.75)),
+    url("background.png") center/cover no-repeat fixed;
+  color:white;
+}
+.panel{
+  max-width:500px;
+  margin:120px auto;
+  text-align:center;
+  border:4px solid #333;
+  padding:30px;
+  background:rgba(0,0,0,.75);
+}
+button{
+  font-family:'Press Start 2P';
+  padding:10px 20px;
+  background:#2ecc71;
+  border:none;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <h1>Stongus</h1>
+  <button onclick="go()">Login</button>
+  <p>Dedicated to 5 Ding Dongs</p>
+</div>
+
+<script>
+function go(){
+  location.href="gamepage.html";
+}
+</script>
+</body>
+</html>
