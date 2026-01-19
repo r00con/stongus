@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Stongus Friends</title>
+  <title>Friends</title>
 </head>
 <body>
 
@@ -12,36 +12,34 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  const me = localStorage.getItem("stongusUser");
-  if (!me) window.location.href = "/";
+const me = localStorage.getItem("stongusUser");
+if (!me) window.location.href = "/";
 
-  const socket = io();
-  socket.emit("join", me);
+const socket = io();
+socket.emit("join", me);
 
-  socket.on("players:update", (players) => {
-    const list = document.getElementById("list");
-    list.innerHTML = "";
+socket.on("players:update", (players) => {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
 
-    Object.keys(players).forEach(name => {
-      if (name === me) return;
+  Object.keys(players).forEach(name => {
+    if (name === me) return;
 
-      const p = players[name];
-      const stocks = p.stocks.length ? p.stocks.join(", ") : "None";
+    const p = players[name];
+    const stocks = p.stocks.length ? p.stocks.join(", ") : "None";
 
-      const div = document.createElement("div");
-      div.innerHTML = `
-        <h3>${name}</h3>
-        <p>Money: $${p.money}</p>
-        <p>Stocks: ${stocks}</p>
-        <hr>
-      `;
-      list.appendChild(div);
-    });
+    list.innerHTML += `
+      <h3>${name}</h3>
+      <p>Money: $${p.money}</p>
+      <p>Stocks: ${stocks}</p>
+      <hr>
+    `;
   });
+});
 
-  function goBack() {
-    window.location.href = "/game";
-  }
+function goBack() {
+  window.location.href = "/game";
+}
 </script>
 
 </body>
