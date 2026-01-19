@@ -1,9 +1,9 @@
 const STOCKS = {
-  "Ding Dong Co.": 30,
-  "Apple juice": 5,
-  "Mojang Airlines": 50,
-  "Unfairprice": 25,
-  "ScamMobilez": 70
+  dingdong: { name: "Ding Dong Co.", price: 30 },
+  applejuice: { name: "Apple juice", price: 5 },
+  mojang: { name: "Mojang Airlines", price: 50 },
+  unfairprice: { name: "Unfairprice", price: 25 },
+  scammobilez: { name: "ScamMobilez", price: 70 }
 };
 
 module.exports = STOCKS;
