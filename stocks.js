@@ -1,63 +1,73 @@
-const STOCKS = {
-  "Ding Dong Co.": 30,
-  "Apple juice": 5,
-  "Mojang Airlines": 50,
-  "Unfairprice": 25,
-  "ScamMobilez": 70
+// stocks.js
+const stocks = {
+  "Ding Dong Co.": { start: 30, price: 30, candles: [] },
+  "Apple juice": { start: 5, price: 5, candles: [] },
+  "Mojang Airlines": { start: 50, price: 50, candles: [] },
+  "Unfairprice": { start: 25, price: 25, candles: [] },
+  "ScamMobilez": { start: 70, price: 70, candles: [] }
 };
 
-const players = {
-  LockedIn: { money: 100, stocks: {} },
-  ragavan67: { money: 100, stocks: {} },
-  Htraddis_1909: { money: 100, stocks: {} },
-  r00congup: { money: 100, stocks: {} },
-  haolie: { money: 100, stocks: {} }
-};
+/* =========================
+   CANDLE CREATION
+========================= */
+function createCandle(name) {
+  const stock = stocks[name];
+  const open = stock.price;
 
+  const maxMove = stock.start;
+  const change =
+    Math.floor(Math.random() * (maxMove * 2 + 1)) - maxMove;
+
+  let close = open + change;
+  if (close < 1) close = 1;
+
+  const high = Math.max(open, close);
+  const low = Math.min(open, close);
+
+  stock.price = close;
+
+  stock.candles.push({
+    time: Date.now(),
+    open,
+    high,
+    low,
+    close
+  });
+
+  // keep last 1440 minutes (1 day)
+  if (stock.candles.length > 1440) {
+    stock.candles.shift();
+  }
+}
+
+/* =========================
+   ENGINE — RUNS ALWAYS
+========================= */
+setInterval(() => {
+  Object.keys(stocks).forEach(createCandle);
+  console.log("Prices updated");
+}, 60 * 1000); // 1 minute
+
+/* =========================
+   ROUTES
+========================= */
 function registerStockRoutes(app) {
 
-  app.get("/stocks", (_, res) => {
-    res.json(STOCKS);
+  // current prices
+  app.get("/stocks", (req, res) => {
+    const prices = {};
+    Object.keys(stocks).forEach(s => {
+      prices[s] = stocks[s].price;
+    });
+    res.json(prices);
   });
 
-  app.get("/player", (req, res) => {
-    const user = req.query.user;
-    if (!players[user]) return res.json(null);
-    res.json(players[user]);
-  });
-
-  app.post("/buy", (req, res) => {
-    const { user, stock } = req.body;
-    if (!players[user] || !STOCKS[stock])
-      return res.json({ ok: false });
-
-    const price = STOCKS[stock];
-    if (players[user].money < price)
-      return res.json({ ok: false });
-
-    players[user].money -= price;
-    players[user].stocks[stock] =
-      (players[user].stocks[stock] || 0) + 1;
-
-    res.json({ ok: true });
-  });
-
-  app.post("/sell", (req, res) => {
-    const { user, stock } = req.body;
-    if (!players[user] || !STOCKS[stock])
-      return res.json({ ok: false });
-
-    if (!players[user].stocks[stock])
-      return res.json({ ok: false });
-
-    players[user].stocks[stock] -= 1;
-    if (players[user].stocks[stock] === 0)
-      delete players[user].stocks[stock];
-
-    players[user].money += STOCKS[stock];
-
-    res.json({ ok: true });
+  // candles for ONE stock
+  app.get("/candles", (req, res) => {
+    const { stock } = req.query;
+    if (!stocks[stock]) return res.json([]);
+    res.json(stocks[stock].candles);
   });
 }
 
-module.exports = { registerStockRoutes, players };
+module.exports = { registerStockRoutes };
