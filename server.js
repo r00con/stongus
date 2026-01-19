@@ -7,20 +7,15 @@ app.use(express.static(__dirname));
 
 const STOCKS = require("./stocks");
 
-/* 🔒 WHITELIST ACCOUNTS */
+/* 🔒 ALLOWED ACCOUNTS */
 const ACCOUNTS = {
-  "LockedIn": "H73Yyr7",
-  "ragavan67": "oJD785k",
-  "Htraddis_1909": "Qys24K0",
-  "r00congup": "Km98N0",
-  "haolie": "Hu72j9W"
+  LockedIn: "H73Yyr7",
+  ragavan67: "oJD785k",
+  Htraddis_1909: "Qys24K0",
+  r00congup: "Km98N0",
+  haolie: "Hu72j9W"
 };
 
-/*
- players = {
-   username: { money: 100, stocks: {} }
- }
-*/
 const players = {};
 
 function ensurePlayer(user) {
@@ -35,7 +30,6 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "landing.html"));
 });
 
-/* LOGIN */
 app.post("/login", (req, res) => {
   const { user, pass } = req.body;
   if (ACCOUNTS[user] !== pass) return res.json({ ok: false });
@@ -43,44 +37,47 @@ app.post("/login", (req, res) => {
   res.json({ ok: true });
 });
 
-/* PLAYER DATA */
 app.get("/player", (req, res) => {
-  const user = req.query.user;
-  if (!players[user]) return res.json(null);
-  res.json(players[user]);
+  res.json(players[req.query.user] || null);
 });
 
-/* STOCK LIST */
+/* SEND STOCKS */
 app.get("/stocks", (req, res) => {
-  res.json(STOCKS);
+  const out = {};
+  Object.keys(STOCKS).forEach(id => {
+    out[id] = STOCKS[id].price;
+  });
+  res.json(out);
 });
 
 /* BUY */
 app.post("/buy", (req, res) => {
-  const { user, stock } = req.body;
+  const { user, stockId } = req.body;
   ensurePlayer(user);
 
-  const price = STOCKS[stock];
-  if (price === undefined) return res.json({ ok: false });
-  if (players[user].money < price) return res.json({ ok: false });
+  const stock = STOCKS[stockId];
+  if (!stock) return res.json({ ok: false });
 
-  players[user].money -= price;
-  players[user].stocks[stock] =
-    (players[user].stocks[stock] || 0) + 1;
+  if (players[user].money < stock.price)
+    return res.json({ ok: false });
+
+  players[user].money -= stock.price;
+  players[user].stocks[stockId] =
+    (players[user].stocks[stockId] || 0) + 1;
 
   res.json({ ok: true });
 });
 
 /* SELL */
 app.post("/sell", (req, res) => {
-  const { user, stock } = req.body;
-  if (!players[user]?.stocks[stock]) return res.json({ ok: false });
+  const { user, stockId } = req.body;
+  if (!players[user]?.stocks[stockId]) return res.json({ ok: false });
 
-  players[user].money += STOCKS[stock];
-  players[user].stocks[stock]--;
+  players[user].money += STOCKS[stockId].price;
+  players[user].stocks[stockId]--;
 
-  if (players[user].stocks[stock] === 0)
-    delete players[user].stocks[stock];
+  if (players[user].stocks[stockId] === 0)
+    delete players[user].stocks[stockId];
 
   res.json({ ok: true });
 });
@@ -96,7 +93,9 @@ app.get("/friends", (req, res) => {
       .map(p => ({
         name: p,
         money: players[p].money,
-        stocks: Object.keys(players[p].stocks)
+        stocks: Object.keys(players[p].stocks).map(
+          id => STOCKS[id].name
+        )
       }))
   );
 });
