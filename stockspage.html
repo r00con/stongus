@@ -1,1 +1,114 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Stongus Stock</title><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"><style>body {  margin: 0;  font-family: 'Press Start 2P', cursive;  background: #0b0b0b;  color: white;}#topbar {  display: flex;  justify-content: space-between;  padding: 12px;  background: #111;  border-bottom: 3px solid #222;}button {  font-family: 'Press Start 2P', cursive;  padding: 8px 12px;  border: none;  cursor: pointer;}.buy { background: #2ecc71; }.sell { background: #e74c3c; }.back { background: #555; }#content {  padding: 30px;  text-align: center;}.box {  border: 3px solid #333;  padding: 30px;  background: #151515;  display: inline-block;  min-width: 300px;}</style></head><body><div id="topbar">  <div id="user"></div>  <button class="back" onclick="goBack()">Back</button></div><div id="content">  <div class="box">    <h2 id="stockName"></h2>    <p id="price"></p>    <p id="owned"></p>    <button class="buy" onclick="buy()">Buy</button>    <button class="sell" onclick="sell()">Sell</button>  </div></div><script>const user = localStorage.getItem("stongus_user");const stock = localStorage.getItem("stongus_selected_stock");if (!user || !stock) location.href = "gamepage.html";document.getElementById("user").innerText = user;let stockPrice = 0;async function load() {  const stocks = await fetch("/stocks").then(r => r.json());  const player = await fetch(`/player?user=${user}`).then(r => r.json());  stockPrice = stocks[stock];  stockName.innerText = stock;  price.innerText = "Price: $" + stockPrice;  owned.innerText = player.stocks.includes(stock)    ? "You OWN this stock"    : "You do NOT own this stock";}async function buy() {  await fetch("/buy", {    method: "POST",    headers: { "Content-Type": "application/json" },    body: JSON.stringify({ user, stock })  });  load();}async function sell() {  await fetch("/sell", {    method: "POST",    headers: { "Content-Type": "application/json" },    body: JSON.stringify({ user, stock })  });  load();}function goBack() {  location.href = "gamepage.html";}load();</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stongus Stock</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Press Start 2P', cursive;
+  background: #0b0b0b;
+  color: white;
+}
+
+#topbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background: #111;
+  border-bottom: 3px solid #222;
+}
+
+button {
+  font-family: 'Press Start 2P', cursive;
+  padding: 8px 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.buy { background: #2ecc71; }
+.sell { background: #e74c3c; }
+.back { background: #555; }
+
+#content {
+  padding: 30px;
+  text-align: center;
+}
+
+.box {
+  border: 3px solid #333;
+  padding: 30px;
+  background: #151515;
+  display: inline-block;
+  min-width: 300px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="topbar">
+  <div id="user"></div>
+  <button class="back" onclick="goBack()">Back</button>
+</div>
+
+<div id="content">
+  <div class="box">
+    <h2 id="stockName"></h2>
+    <p id="price"></p>
+    <p id="owned"></p>
+
+    <button class="buy" onclick="buy()">Buy</button>
+    <button class="sell" onclick="sell()">Sell</button>
+  </div>
+</div>
+
+<script>
+const user = localStorage.getItem("stongus_user");
+const stock = localStorage.getItem("stongus_selected_stock");
+
+if (!user || !stock) location.href = "gamepage.html";
+
+userEl.innerText = user;
+
+async function load() {
+  const stocks = await fetch("/stocks").then(r => r.json());
+  const player = await fetch(`/player?user=${user}`).then(r => r.json());
+
+  stockName.innerText = stock;
+  price.innerText = "Price: $" + stocks[stock];
+
+  const qty = player.stocks[stock] || 0;
+  owned.innerText = `You own: ${qty}`;
+}
+
+async function buy() {
+  await fetch("/buy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user, stock })
+  });
+  load();
+}
+
+async function sell() {
+  await fetch("/sell", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user, stock })
+  });
+  load();
+}
+
+function goBack() {
+  location.href = "gamepage.html";
+}
+
+load();
+</script>
+
+</body>
+</html>
