@@ -8,41 +8,40 @@ body{
   margin:0;
   font-family:'Press Start 2P';
   background:
-    linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.75)),
+    linear-gradient(rgba(0,0,0,.8),rgba(0,0,0,.8)),
     url("background.png") center/cover fixed;
   color:white;
 }
-.panel{
-  max-width:500px;
+.box{
+  max-width:420px;
   margin:40px auto;
-  border:4px solid #333;
   padding:20px;
-  background:rgba(0,0,0,.8);
+  border:4px solid #333;
+  background:rgba(0,0,0,.85);
 }
 </style>
 </head>
 <body>
 
-<div class="panel">
+<div class="box">
   <h2 id="name"></h2>
   Price: $<span id="price"></span><br>
-  You own: <span id="owned"></span><br><br>
+  You own: <span id="own"></span><br><br>
   <button onclick="buy()">Buy</button>
-  <button onclick="sell()">Sell</button>
-  <br><br>
+  <button onclick="sell()">Sell</button><br><br>
   <button onclick="back()">Back</button>
 </div>
 
 <script>
-const user=localStorage.getItem("stongus_user");
-const stock=localStorage.getItem("stongus_selected_stock");
+const user=localStorage.getItem("user");
+const stock=localStorage.getItem("stock");
 
 async function load(){
   const prices=await (await fetch("/stocks")).json();
   const me=await (await fetch(`/player?user=${user}`)).json();
   document.getElementById("name").innerText=stock;
   document.getElementById("price").innerText=prices[stock];
-  document.getElementById("owned").innerText=me.stocks[stock]||0;
+  document.getElementById("own").innerText=me.stocks[stock]||0;
 }
 async function buy(){
   await fetch("/buy",{method:"POST",headers:{'Content-Type':'application/json'},
