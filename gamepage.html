@@ -28,6 +28,7 @@ body{
   border:4px solid #333;
   padding:15px;
   background:rgba(0,0,0,.85);
+  cursor:pointer;
 }
 </style>
 </head>
@@ -43,29 +44,30 @@ body{
 <div class="grid" id="stocks"></div>
 
 <script>
-const user = localStorage.getItem("user");
+const user=localStorage.getItem("user");
 if(!user) location.href="landing.html";
 document.getElementById("user").innerText=user;
 
 async function load(){
-  const prices = await (await fetch("/stocks")).json();
-  const me = await (await fetch(`/player?user=${user}`)).json();
-  document.getElementById("money").innerText = me.money;
+  const prices=await (await fetch("/stocks")).json();
+  const me=await (await fetch(`/player?user=${user}`)).json();
+  document.getElementById("money").innerText=me.money;
 
-  const grid=document.getElementById("stocks");
-  grid.innerHTML="";
+  const g=document.getElementById("stocks");
+  g.innerHTML="";
   Object.keys(prices).forEach(s=>{
     const d=document.createElement("div");
     d.className="card";
     d.innerHTML=`${s}<br>$${prices[s]}`;
-    grid.appendChild(d);
+    d.onclick=()=>{
+      localStorage.setItem("stock",s);
+      location.href="stockspage.html";
+    };
+    g.appendChild(d);
   });
 }
 function friends(){location.href="friends.html";}
-function logout(){
-  localStorage.clear();
-  location.href="landing.html";
-}
+function logout(){localStorage.clear();location.href="landing.html";}
 load();
 </script>
 </body>
