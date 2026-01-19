@@ -1,44 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Friends</title>
+  <title>Stongus Friends</title>
+
+  <!-- PIXEL FONT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<button onclick="goBack()">← Back</button>
-<h1>Friends</h1>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span id="username">USERNAME</span>
+      <button>Friends</button>
+    </div>
+    <button onclick="logout()">Logout</button>
+  </div>
 
-<div id="list"></div>
+  <!-- CONTENT -->
+  <div class="container">
+    <h1>Friends</h1>
 
-<script src="/socket.io/socket.io.js"></script>
+    <div class="friend">
+      <strong>Friend1</strong><br>
+      Money: $100<br>
+      Stocks: None
+    </div>
+
+    <div class="friend">
+      <strong>Friend2</strong><br>
+      Money: $100<br>
+      Stocks: None
+    </div>
+
+    <div class="friend">
+      <strong>Friend3</strong><br>
+      Money: $100<br>
+      Stocks: None
+    </div>
+
+    <div class="friend">
+      <strong>Friend4</strong><br>
+      Money: $100<br>
+      Stocks: None
+    </div>
+
+    <br>
+    <button onclick="goBack()">← Back</button>
+  </div>
+
 <script>
-const me = localStorage.getItem("stongusUser");
-if (!me) window.location.href = "/";
-
-const socket = io();
-socket.emit("join", me);
-
-socket.on("players:update", (players) => {
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-
-  Object.keys(players).forEach(name => {
-    if (name === me) return;
-
-    const p = players[name];
-    const stocks = p.stocks.length ? p.stocks.join(", ") : "None";
-
-    list.innerHTML += `
-      <h3>${name}</h3>
-      <p>Money: $${p.money}</p>
-      <p>Stocks: ${stocks}</p>
-      <hr>
-    `;
-  });
-});
-
+/* PLACEHOLDER FUNCTIONS */
 function goBack() {
-  window.location.href = "/game";
+  location.href = "gamepage.html";
+}
+function logout() {
+  location.href = "login.html";
 }
 </script>
 
