@@ -3,62 +3,65 @@
 <head>
   <title>Stongus Friends</title>
 
-  <!-- PIXEL FONT -->
+  <!-- FONT + DESIGN -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <div class="topbar-left">
-      <span id="username">USERNAME</span>
-      <button>Friends</button>
-    </div>
-    <button onclick="logout()">Logout</button>
+<div class="topbar">
+  <div class="topbar-left">
+    <span id="username"></span>
+    <button>Friends</button>
   </div>
+  <button onclick="logout()">Logout</button>
+</div>
 
-  <!-- CONTENT -->
-  <div class="container">
-    <h1>Friends</h1>
-
-    <div class="friend">
-      <strong>Friend1</strong><br>
-      Money: $100<br>
-      Stocks: None
-    </div>
-
-    <div class="friend">
-      <strong>Friend2</strong><br>
-      Money: $100<br>
-      Stocks: None
-    </div>
-
-    <div class="friend">
-      <strong>Friend3</strong><br>
-      Money: $100<br>
-      Stocks: None
-    </div>
-
-    <div class="friend">
-      <strong>Friend4</strong><br>
-      Money: $100<br>
-      Stocks: None
-    </div>
-
-    <br>
-    <button onclick="goBack()">← Back</button>
-  </div>
+<div class="container">
+  <h1>Friends</h1>
+  <div id="list"></div>
+  <br>
+  <button onclick="goBack()">← Back</button>
+</div>
 
 <script>
-/* PLACEHOLDER FUNCTIONS */
+const me = localStorage.getItem("stongusUser");
+if (!me) location.href = "login.html";
+
+// ✅ FIX: show real username
+document.getElementById("username").innerText = me;
+
+async function fetchFriends() {
+  const res = await fetch(`/friends-data?me=${me}`);
+  const data = await res.json();
+
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  data.forEach(friend => {
+    const div = document.createElement("div");
+    div.className = "friend";
+    div.innerHTML = `
+      <strong>${friend.name}</strong><br>
+      Money: $${friend.money}<br>
+      Stocks: ${friend.stocks.length ? friend.stocks.join(", ") : "None"}
+    `;
+    list.appendChild(div);
+  });
+}
+
+// 🔁 live update @ 0.65s
+fetchFriends();
+setInterval(fetchFriends, 650);
+
 function goBack() {
   location.href = "gamepage.html";
 }
+
 function logout() {
+  localStorage.removeItem("stongusUser");
   location.href = "login.html";
 }
 </script>
