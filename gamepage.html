@@ -3,37 +3,39 @@
 <head>
   <title>Stongus Game</title>
 
-  <!-- PIXEL FONT -->
+  <!-- FONT + DESIGN -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <div class="topbar-left">
-      <span id="username">USERNAME</span>
-      <button onclick="goFriends()">Friends</button>
-    </div>
-    <button onclick="logout()">Logout</button>
+<div class="topbar">
+  <div class="topbar-left">
+    <span id="username"></span>
+    <button onclick="goFriends()">Friends</button>
   </div>
+  <button onclick="logout()">Logout</button>
+</div>
 
-  <!-- CONTENT -->
-  <div class="container">
-    <h1>Game Page</h1>
-    <p>Game content goes here.</p>
-  </div>
+<div class="container">
+  <h1>Game Page</h1>
+</div>
 
 <script>
-/* PLACEHOLDER FUNCTIONS
-   Replace or keep if already existing */
+const user = localStorage.getItem("stongusUser");
+if (!user) location.href = "login.html";
+
+// ✅ FIX: show real username
+document.getElementById("username").innerText = user;
+
 function goFriends() {
   location.href = "friends.html";
 }
+
 function logout() {
+  localStorage.removeItem("stongusUser");
   location.href = "login.html";
 }
 </script>
