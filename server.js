@@ -1,75 +1,98 @@
 const express = require("express");
-const app = express();
 const path = require("path");
+const app = express();
 
 app.use(express.json());
 app.use(express.static(__dirname));
 
-/* =====================
-   STOCKS
-===================== */
-const { getPrices } = require("./stocks");
+const stocks = require("./stocks");
 
-/* =====================
-   PLAYERS
-===================== */
+/*
+  players = {
+    username: {
+      password: "pass",
+      money: 100,
+      stocks: {}
+    }
+  }
+*/
 const players = {};
 
-function ensurePlayer(user) {
-  if (!players[user]) {
-    players[user] = { money: 100, stocks: {} };
+function ensurePlayer(name, pass) {
+  if (!players[name]) {
+    players[name] = {
+      password: pass,
+      money: 100,
+      stocks: {}
+    };
+    return true; // new account
   }
+  return false;
 }
 
-/* =====================
-   ROUTES
-===================== */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "landing.html"));
 });
 
+/* LOGIN / REGISTER */
+app.post("/login", (req, res) => {
+  const { user, pass } = req.body;
+  if (!user || !pass) return res.json({ ok: false });
+
+  if (!players[user]) {
+    // register
+    ensurePlayer(user, pass);
+    return res.json({ ok: true });
+  }
+
+  // login
+  if (players[user].password !== pass) {
+    return res.json({ ok: false });
+  }
+
+  res.json({ ok: true });
+});
+
 app.get("/player", (req, res) => {
   const user = req.query.user;
-  if (!user) return res.json(null);
-  ensurePlayer(user);
+  if (!players[user]) return res.json(null);
   res.json(players[user]);
 });
 
 app.get("/stocks", (req, res) => {
-  res.json(getPrices());
+  res.json(stocks);
 });
 
 app.post("/buy", (req, res) => {
   const { user, stock } = req.body;
-  if (!user || !stock) return res.json({ ok: false });
+  if (!players[user]) return res.json({ ok: false });
 
-  ensurePlayer(user);
-  const price = getPrices()[stock];
+  const price = stocks[stock];
   if (players[user].money < price) return res.json({ ok: false });
 
   players[user].money -= price;
-  players[user].stocks[stock] = (players[user].stocks[stock] || 0) + 1;
+  players[user].stocks[stock] =
+    (players[user].stocks[stock] || 0) + 1;
+
   res.json({ ok: true });
 });
 
 app.post("/sell", (req, res) => {
   const { user, stock } = req.body;
-  if (!user || !stock) return res.json({ ok: false });
+  if (!players[user]?.stocks[stock]) return res.json({ ok: false });
 
-  ensurePlayer(user);
-  if (!players[user].stocks[stock]) return res.json({ ok: false });
-
-  const price = getPrices()[stock];
-  players[user].money += price;
+  players[user].money += stocks[stock];
   players[user].stocks[stock]--;
-  if (players[user].stocks[stock] <= 0) delete players[user].stocks[stock];
+
+  if (players[user].stocks[stock] === 0)
+    delete players[user].stocks[stock];
 
   res.json({ ok: true });
 });
 
-app.get("/friends-data", (req, res) => {
+app.get("/friends", (req, res) => {
   const me = req.query.me;
-  ensurePlayer(me);
+  if (!players[me]) return res.json([]);
 
   res.json(
     Object.keys(players)
