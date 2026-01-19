@@ -5,9 +5,9 @@ const app = express();
 app.use(express.json());
 app.use(express.static(__dirname));
 
-const stocks = require("./stocks");
+const STOCKS = require("./stocks");
 
-/* 🔒 WHITELIST */
+/* 🔒 WHITELIST ACCOUNTS */
 const ACCOUNTS = {
   "LockedIn": "H73Yyr7",
   "ragavan67": "oJD785k",
@@ -16,6 +16,11 @@ const ACCOUNTS = {
   "haolie": "Hu72j9W"
 };
 
+/*
+ players = {
+   username: { money: 100, stocks: {} }
+ }
+*/
 const players = {};
 
 function ensurePlayer(user) {
@@ -30,29 +35,33 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "landing.html"));
 });
 
+/* LOGIN */
 app.post("/login", (req, res) => {
   const { user, pass } = req.body;
-  if (!ACCOUNTS[user]) return res.json({ ok: false });
   if (ACCOUNTS[user] !== pass) return res.json({ ok: false });
-
   ensurePlayer(user);
   res.json({ ok: true });
 });
 
+/* PLAYER DATA */
 app.get("/player", (req, res) => {
   const user = req.query.user;
   if (!players[user]) return res.json(null);
   res.json(players[user]);
 });
 
+/* STOCK LIST */
 app.get("/stocks", (req, res) => {
-  res.json(stocks);
+  res.json(STOCKS);
 });
 
+/* BUY */
 app.post("/buy", (req, res) => {
   const { user, stock } = req.body;
   ensurePlayer(user);
-  const price = stocks[stock];
+
+  const price = STOCKS[stock];
+  if (price === undefined) return res.json({ ok: false });
   if (players[user].money < price) return res.json({ ok: false });
 
   players[user].money -= price;
@@ -62,11 +71,12 @@ app.post("/buy", (req, res) => {
   res.json({ ok: true });
 });
 
+/* SELL */
 app.post("/sell", (req, res) => {
   const { user, stock } = req.body;
   if (!players[user]?.stocks[stock]) return res.json({ ok: false });
 
-  players[user].money += stocks[stock];
+  players[user].money += STOCKS[stock];
   players[user].stocks[stock]--;
 
   if (players[user].stocks[stock] === 0)
@@ -75,8 +85,11 @@ app.post("/sell", (req, res) => {
   res.json({ ok: true });
 });
 
+/* FRIENDS */
 app.get("/friends", (req, res) => {
   const me = req.query.me;
+  ensurePlayer(me);
+
   res.json(
     Object.keys(players)
       .filter(p => p !== me)
