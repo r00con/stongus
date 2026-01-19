@@ -56,13 +56,6 @@ body {
 .stock:hover {
   border-color: #2ecc71;
 }
-
-#details {
-  margin-top: 25px;
-  border: 3px solid #444;
-  padding: 15px;
-  display: none;
-}
 </style>
 </head>
 
@@ -73,26 +66,16 @@ body {
   <div>
     $<span id="money">0</span>
     <button onclick="location.href='friends.html'">Friends</button>
-    <button onclick="logout()">Logout</button>
   </div>
 </div>
 
 <div id="main">
-
   <div id="toggle">
     <button onclick="mode='owned';render()">Owned</button>
     <button onclick="mode='unowned';render()">Unowned</button>
   </div>
 
   <div id="stocks"></div>
-
-  <div id="details">
-    <div id="dname"></div>
-    <div id="dprice"></div>
-    <button onclick="buy()">Buy</button>
-    <button onclick="sell()">Sell</button>
-  </div>
-
 </div>
 
 <script>
@@ -103,15 +86,11 @@ document.getElementById("user").innerText = user;
 
 let player = {};
 let stocks = {};
-let selected = null;
 let mode = "owned";
 
 async function load() {
-  player = await fetch(`/player?user=${user}`).then(r=>r.json());
-  stocks = await fetch(`/stocks`).then(r=>r.json());
-
-  if (!player) return;
-
+  player = await fetch(`/player?user=${user}`).then(r => r.json());
+  stocks = await fetch(`/stocks`).then(r => r.json());
   money.innerText = player.money;
   render();
 }
@@ -121,44 +100,25 @@ function render() {
 
   for (let s in stocks) {
     const owned = player.stocks.includes(s);
-    if (mode==="owned" && !owned) continue;
-    if (mode==="unowned" && owned) continue;
+    if (mode === "owned" && !owned) continue;
+    if (mode === "unowned" && owned) continue;
 
     const d = document.createElement("div");
     d.className = "stock";
     d.innerHTML = `${s}<br>$${stocks[s]}`;
-    d.onclick = ()=>show(s);
+    d.onclick = () => openStock(s);
     stocksDiv.appendChild(d);
   }
 }
 
-function show(s) {
-  selected = s;
-  details.style.display = "block";
-  dname.innerText = s;
-  dprice.innerText = "Price: $" + stocks[s];
-}
-
-async function buy() {
-  await fetch("/buy",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({user,stock:selected})});
-  load();
-}
-
-async function sell() {
-  await fetch("/sell",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({user,stock:selected})});
-  load();
-}
-
-function logout() {
-  localStorage.removeItem("stongus_user");
-  location.href = "landing.html";
+function openStock(name) {
+  localStorage.setItem("stongus_selected_stock", name);
+  window.location.href = "stockspage.html";
 }
 
 const stocksDiv = document.getElementById("stocks");
 load();
-setInterval(load,650);
+setInterval(load, 650);
 </script>
 
 </body>
