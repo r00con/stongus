@@ -1,42 +1,58 @@
 const express = require("express");
-const path = require("path");
-const http = require("http");
-const { Server } = require("socket.io");
-
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 
-// Serve static files
+// Serve static files (html, css, js)
 app.use(express.static(__dirname));
 
-// Pages
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "landing.html")));
-app.get("/login", (req, res) => res.sendFile(path.join(__dirname, "login.html")));
-app.get("/game", (req, res) => res.sendFile(path.join(__dirname, "gamepage.html")));
-app.get("/friends", (req, res) => res.sendFile(path.join(__dirname, "friends.html")));
-
-// ---- GAME STATE (temporary) ----
+/* ======================
+   GAME DATA (SERVER MEMORY)
+   ====================== */
 const players = {
-  LockedIn: { money: 100, stocks: [] },
+  LockedIn: { money: 100, stocks: ["A"] },
   ragavan67: { money: 100, stocks: [] },
-  Htraddis_1909: { money: 100, stocks: [] },
+  Htraddis_1909: { money: 100, stocks: ["B"] },
   r00congup: { money: 100, stocks: [] },
   haolie: { money: 100, stocks: [] }
 };
 
-// ---- SOCKETS ----
-io.on("connection", (socket) => {
-  socket.on("join", (username) => {
-    socket.username = username;
-    io.emit("players:update", players);
-  });
+/* ======================
+   PAGES
+   ====================== */
+app.get("/", (req, res) => res.sendFile(__dirname + "/landing.html"));
+app.get("/login", (req, res) => res.sendFile(__dirname + "/login.html"));
+app.get("/gamepage.html", (req, res) =>
+  res.sendFile(__dirname + "/gamepage.html")
+);
+app.get("/friends.html", (req, res) =>
+  res.sendFile(__dirname + "/friends.html")
+);
 
-  socket.on("disconnect", () => {});
+/* ======================
+   FRIENDS DATA ENDPOINT
+   ====================== */
+app.get("/friends-data", (req, res) => {
+  const me = req.query.me;
+
+  if (!me || !players[me]) {
+    return res.json([]);
+  }
+
+  const friends = Object.keys(players)
+    .filter(name => name !== me)
+    .map(name => ({
+      name: name,
+      money: players[name].money,
+      stocks: players[name].stocks
+    }));
+
+  res.json(friends);
 });
 
-server.listen(PORT, () => {
+/* ======================
+   START SERVER
+   ====================== */
+app.listen(PORT, () => {
   console.log("Stongus server running on port " + PORT);
 });
