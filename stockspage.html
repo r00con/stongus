@@ -3,42 +3,32 @@
 <head>
 <title>Stock</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
 <style>
 body{
   margin:0;
   font-family:'Press Start 2P';
   background:
     linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.75)),
-    url("background.png") center/cover no-repeat fixed;
+    url("background.png") center/cover fixed;
   color:white;
 }
 .panel{
-  max-width:700px;
+  max-width:500px;
   margin:40px auto;
   border:4px solid #333;
   padding:20px;
-  background:rgba(0,0,0,.75);
+  background:rgba(0,0,0,.8);
 }
-button{font-family:'Press Start 2P';}
 </style>
 </head>
 <body>
 
 <div class="panel">
   <h2 id="name"></h2>
-  <p>Price: $<span id="price"></span></p>
-  <p>You own: <span id="owned"></span></p>
-
+  Price: $<span id="price"></span><br>
+  You own: <span id="owned"></span><br><br>
   <button onclick="buy()">Buy</button>
   <button onclick="sell()">Sell</button>
-
-  <hr>
-  <button onclick="view='1m';draw()">1 min</button>
-  <button onclick="view='1d';draw()">1 day</button>
-
-  <canvas id="chart"></canvas>
   <br><br>
   <button onclick="back()">Back</button>
 </div>
@@ -46,52 +36,22 @@ button{font-family:'Press Start 2P';}
 <script>
 const user=localStorage.getItem("stongus_user");
 const stock=localStorage.getItem("stongus_selected_stock");
-let candles=[],view="1m",chart;
 
 async function load(){
-  const p=await (await fetch("/stocks")).json();
+  const prices=await (await fetch("/stocks")).json();
   const me=await (await fetch(`/player?user=${user}`)).json();
-  const c=await (await fetch(`/candles?stock=${encodeURIComponent(stock)}`)).json();
-  candles=c;
   document.getElementById("name").innerText=stock;
-  document.getElementById("price").innerText=p[stock];
+  document.getElementById("price").innerText=prices[stock];
   document.getElementById("owned").innerText=me.stocks[stock]||0;
-  draw();
 }
-
-function agg(n){
-  let out=[];
-  for(let i=0;i<candles.length;i+=n){
-    let s=candles.slice(i,i+n);
-    if(!s.length)continue;
-    out.push({
-      x:s[0].time,
-      o:s[0].open,
-      h:Math.max(...s.map(x=>x.high)),
-      l:Math.min(...s.map(x=>x.low)),
-      c:s[s.length-1].close
-    });
-  }
-  return out;
-}
-
-function draw(){
-  if(chart)chart.destroy();
-  let data=view==="1m"
-    ? candles.map(c=>({x:c.time,o:c.open,h:c.high,l:c.low,c:c.close}))
-    : agg(1440);
-  chart=new Chart(document.getElementById("chart"),{
-    type:"candlestick",
-    data:{datasets:[{data}]}
-  });
-}
-
 async function buy(){
-  await fetch("/buy",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({user,stock})});
+  await fetch("/buy",{method:"POST",headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({user,stock})});
   load();
 }
 async function sell(){
-  await fetch("/sell",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({user,stock})});
+  await fetch("/sell",{method:"POST",headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({user,stock})});
   load();
 }
 function back(){location.href="gamepage.html";}
