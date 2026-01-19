@@ -2,35 +2,40 @@
 <html>
 <head>
   <title>Stongus Game</title>
+
+  <!-- PIXEL FONT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div>
-  <span id="user"></span>
-  <button onclick="goFriends()">Friends</button>
-  <button onclick="logout()">Logout</button>
-</div>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span id="username">USERNAME</span>
+      <button onclick="goFriends()">Friends</button>
+    </div>
+    <button onclick="logout()">Logout</button>
+  </div>
 
-<h1>Game Page</h1>
+  <!-- CONTENT -->
+  <div class="container">
+    <h1>Game Page</h1>
+    <p>Game content goes here.</p>
+  </div>
 
-<script src="/socket.io/socket.io.js"></script>
 <script>
-  const user = localStorage.getItem("stongusUser");
-  if (!user) window.location.href = "/";
-
-  document.getElementById("user").innerText = "User: " + user;
-
-  const socket = io();
-  socket.emit("join", user);
-
-  function goFriends() {
-    window.location.href = "/friends";
-  }
-
-  function logout() {
-    localStorage.removeItem("stongusUser");
-    window.location.href = "/";
-  }
+/* PLACEHOLDER FUNCTIONS
+   Replace or keep if already existing */
+function goFriends() {
+  location.href = "friends.html";
+}
+function logout() {
+  location.href = "login.html";
+}
 </script>
 
 </body>
