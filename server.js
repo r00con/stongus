@@ -7,49 +7,35 @@ app.use(express.static(__dirname));
 
 const stocks = require("./stocks");
 
-/*
-  players = {
-    username: {
-      password: "pass",
-      money: 100,
-      stocks: {}
-    }
-  }
-*/
+/* 🔒 WHITELIST */
+const ACCOUNTS = {
+  "LockedIn": "H73Yyr7",
+  "ragavan67": "oJD785k",
+  "Htraddis_1909": "Qys24K0",
+  "r00congup": "Km98N0",
+  "haolie": "Hu72j9W"
+};
+
 const players = {};
 
-function ensurePlayer(name, pass) {
-  if (!players[name]) {
-    players[name] = {
-      password: pass,
-      money: 100,
-      stocks: {}
-    };
-    return true; // new account
+function ensurePlayer(user) {
+  if (!players[user]) {
+    players[user] = { money: 100, stocks: {} };
   }
-  return false;
 }
+
+/* ROUTES */
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "landing.html"));
 });
 
-/* LOGIN / REGISTER */
 app.post("/login", (req, res) => {
   const { user, pass } = req.body;
-  if (!user || !pass) return res.json({ ok: false });
+  if (!ACCOUNTS[user]) return res.json({ ok: false });
+  if (ACCOUNTS[user] !== pass) return res.json({ ok: false });
 
-  if (!players[user]) {
-    // register
-    ensurePlayer(user, pass);
-    return res.json({ ok: true });
-  }
-
-  // login
-  if (players[user].password !== pass) {
-    return res.json({ ok: false });
-  }
-
+  ensurePlayer(user);
   res.json({ ok: true });
 });
 
@@ -65,8 +51,7 @@ app.get("/stocks", (req, res) => {
 
 app.post("/buy", (req, res) => {
   const { user, stock } = req.body;
-  if (!players[user]) return res.json({ ok: false });
-
+  ensurePlayer(user);
   const price = stocks[stock];
   if (players[user].money < price) return res.json({ ok: false });
 
@@ -92,8 +77,6 @@ app.post("/sell", (req, res) => {
 
 app.get("/friends", (req, res) => {
   const me = req.query.me;
-  if (!players[me]) return res.json([]);
-
   res.json(
     Object.keys(players)
       .filter(p => p !== me)
