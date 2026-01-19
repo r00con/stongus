@@ -1,201 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <title>Stongus</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
 <style>
-body {
-  margin: 0;
-  background: #0b0b0b;
-  color: white;
-  font-family: 'Press Start 2P', cursive;
+body{
+  margin:0;
+  font-family:'Press Start 2P';
+  background:
+    linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.75)),
+    url("background.png") center/cover no-repeat fixed;
+  color:white;
 }
-
-#topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  background: #111;
-  border-bottom: 3px solid #222;
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  padding:12px;
+  border-bottom:4px solid #333;
+  background:rgba(0,0,0,.85);
 }
-
-#left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+button{font-family:'Press Start 2P';}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:15px;
+  padding:20px;
 }
-
-button {
-  font-family: 'Press Start 2P', cursive;
-  padding: 6px 10px;
-  border: none;
-  cursor: pointer;
-}
-
-#money {
-  color: #2ecc71;
-}
-
-#tabs {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  background: #151515;
-}
-
-#tabs button {
-  background: #333;
-  color: white;
-}
-
-#tabs button.active {
-  background: #2ecc71;
-  color: black;
-}
-
-#stocks {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 15px;
-  padding: 20px;
-}
-
-.stock {
-  border: 3px solid #333;
-  padding: 15px;
-  background: #141414;
-  cursor: pointer;
-}
-
-.stock:hover {
-  border-color: #2ecc71;
-}
-
-.name {
-  margin-bottom: 8px;
-}
-
-.price {
-  color: #aaa;
-}
-
-.owned {
-  margin-top: 6px;
-  color: #2ecc71;
+.card{
+  border:4px solid #333;
+  padding:15px;
+  background:rgba(0,0,0,.75);
+  cursor:pointer;
 }
 </style>
 </head>
-
 <body>
 
-<div id="topbar">
-  <div id="left">
-    <span id="user">USER</span>
-    <button onclick="goFriends()">Friends</button>
+<div class="topbar">
+  <div id="user"></div>
+  <div>
+    $<span id="money">0</span>
+    <button onclick="friends()">Friends</button>
   </div>
-  <div id="money">$0</div>
 </div>
 
-<div id="tabs">
-  <button id="allBtn" class="active" onclick="setMode('all')">All</button>
-  <button id="ownedBtn" onclick="setMode('owned')">Owned</button>
-  <button id="unownedBtn" onclick="setMode('unowned')">Unowned</button>
-</div>
-
-<div id="stocks"></div>
+<div class="grid" id="stocks"></div>
 
 <script>
-/* =====================
-   STATE
-===================== */
-const user = localStorage.getItem("stongus_user");
-if (!user) location.href = "landing.html";
+const user=localStorage.getItem("stongus_user")||"LockedIn";
+document.getElementById("user").innerText=user;
 
-document.getElementById("user").innerText = user;
+let prices={},player={};
 
-let stocks = {};
-let player = null;
-let mode = "all";
-
-/* =====================
-   LOAD DATA
-===================== */
-async function load() {
-  const s = await fetch("/stocks");
-  stocks = await s.json();
-
-  const p = await fetch(`/player?user=${user}`);
-  player = await p.json();
-
-  document.getElementById("money").innerText = "$" + player.money;
-
+async function load(){
+  prices=await (await fetch("/stocks")).json();
+  player=await (await fetch(`/player?user=${user}`)).json();
+  document.getElementById("money").innerText=player.money;
   render();
 }
 
-/* =====================
-   RENDER STOCKS
-===================== */
-function render() {
-  const box = document.getElementById("stocks");
-  box.innerHTML = "";
-
-  Object.keys(stocks).forEach(name => {
-    const qty = player.stocks[name] || 0;
-    const owned = qty > 0;
-
-    if (mode === "owned" && !owned) return;
-    if (mode === "unowned" && owned) return;
-
-    const div = document.createElement("div");
-    div.className = "stock";
-    div.innerHTML = `
-      <div class="name">${name}</div>
-      <div class="price">Price: $${stocks[name]}</div>
-      ${owned ? `<div class="owned">Owned</div>` : ""}
-    `;
-
-    div.onclick = () => {
-      localStorage.setItem("stongus_selected_stock", name);
-      location.href = "stockspage.html";
+function render(){
+  const box=document.getElementById("stocks");
+  box.innerHTML="";
+  Object.keys(prices).forEach(s=>{
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerHTML=`${s}<br>Price: $${prices[s]}`;
+    div.onclick=()=>{
+      localStorage.setItem("stongus_selected_stock",s);
+      location.href="stockspage.html";
     };
-
     box.appendChild(div);
   });
 }
 
-/* =====================
-   MODE TOGGLE
-===================== */
-function setMode(m) {
-  mode = m;
-
-  document.getElementById("allBtn").classList.remove("active");
-  document.getElementById("ownedBtn").classList.remove("active");
-  document.getElementById("unownedBtn").classList.remove("active");
-
-  if (m === "all") allBtn.classList.add("active");
-  if (m === "owned") ownedBtn.classList.add("active");
-  if (m === "unowned") unownedBtn.classList.add("active");
-
-  render();
-}
-
-/* =====================
-   NAV
-===================== */
-function goFriends() {
-  location.href = "friends.html";
-}
-
-/* =====================
-   START
-===================== */
+function friends(){location.href="friends.html";}
 load();
 </script>
-
 </body>
 </html>
