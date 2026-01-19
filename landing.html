@@ -33,26 +33,26 @@ input,button{
   <h1>Stongus</h1>
   <input id="user" placeholder="Username"><br><br>
   <input id="pass" type="password" placeholder="Password"><br><br>
-  <button onclick="login()">Login / Register</button>
+  <button onclick="login()">Login</button>
   <p>Dedicated to 5 Ding Dongs</p>
 </div>
 
 <script>
 async function login(){
-  const user = document.getElementById("user").value.trim();
-  const pass = document.getElementById("pass").value.trim();
-  if(!user || !pass) return;
+  const user=document.getElementById("user").value.trim();
+  const pass=document.getElementById("pass").value.trim();
+  if(!user||!pass) return;
 
-  const res = await fetch("/login",{
+  const r=await fetch("/login",{
     method:"POST",
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({user,pass})
   });
-  const data = await res.json();
-  if(!data.ok){ alert("Wrong password"); return; }
+  const d=await r.json();
+  if(!d.ok){ alert("Not allowed"); return; }
 
   localStorage.clear();
-  localStorage.setItem("user", user);
+  localStorage.setItem("user",user);
   location.href="gamepage.html";
 }
 </script>
