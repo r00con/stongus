@@ -1,43 +1,164 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Stongus Game</title>
+<meta charset="UTF-8">
+<title>Stongus Game</title>
 
-  <!-- FONT + DESIGN -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Press Start 2P', cursive;
+  background: #0b0b0b;
+  color: white;
+}
+
+#topbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background: #111;
+  border-bottom: 3px solid #222;
+}
+
+#topbar button {
+  font-family: 'Press Start 2P', cursive;
+  padding: 6px 10px;
+  background: #2ecc71;
+  border: none;
+  cursor: pointer;
+}
+
+#main {
+  padding: 20px;
+}
+
+#toggle button {
+  font-family: 'Press Start 2P', cursive;
+  margin-right: 10px;
+  padding: 6px 10px;
+}
+
+#stocks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+  gap: 15px;
+}
+
+.stock {
+  border: 3px solid #333;
+  padding: 15px;
+  background: #151515;
+  cursor: pointer;
+}
+
+.stock:hover {
+  border-color: #2ecc71;
+}
+
+#details {
+  margin-top: 25px;
+  border: 3px solid #444;
+  padding: 15px;
+  display: none;
+}
+</style>
 </head>
+
 <body>
 
-<div class="topbar">
-  <div class="topbar-left">
-    <span id="username"></span>
-    <button onclick="goFriends()">Friends</button>
+<div id="topbar">
+  <div id="user"></div>
+  <div>
+    $<span id="money">0</span>
+    <button onclick="location.href='friends.html'">Friends</button>
+    <button onclick="logout()">Logout</button>
   </div>
-  <button onclick="logout()">Logout</button>
 </div>
 
-<div class="container">
-  <h1>Game Page</h1>
+<div id="main">
+
+  <div id="toggle">
+    <button onclick="mode='owned';render()">Owned</button>
+    <button onclick="mode='unowned';render()">Unowned</button>
+  </div>
+
+  <div id="stocks"></div>
+
+  <div id="details">
+    <div id="dname"></div>
+    <div id="dprice"></div>
+    <button onclick="buy()">Buy</button>
+    <button onclick="sell()">Sell</button>
+  </div>
+
 </div>
 
 <script>
-const user = localStorage.getItem("stongusUser");
-if (!user) location.href = "login.html";
+const user = localStorage.getItem("stongus_user");
+if (!user) location.href = "landing.html";
 
-// ✅ FIX: show real username
-document.getElementById("username").innerText = user;
+document.getElementById("user").innerText = user;
 
-function goFriends() {
-  location.href = "friends.html";
+let player = {};
+let stocks = {};
+let selected = null;
+let mode = "owned";
+
+async function load() {
+  player = await fetch(`/player?user=${user}`).then(r=>r.json());
+  stocks = await fetch(`/stocks`).then(r=>r.json());
+
+  if (!player) return;
+
+  money.innerText = player.money;
+  render();
+}
+
+function render() {
+  stocksDiv.innerHTML = "";
+
+  for (let s in stocks) {
+    const owned = player.stocks.includes(s);
+    if (mode==="owned" && !owned) continue;
+    if (mode==="unowned" && owned) continue;
+
+    const d = document.createElement("div");
+    d.className = "stock";
+    d.innerHTML = `${s}<br>$${stocks[s]}`;
+    d.onclick = ()=>show(s);
+    stocksDiv.appendChild(d);
+  }
+}
+
+function show(s) {
+  selected = s;
+  details.style.display = "block";
+  dname.innerText = s;
+  dprice.innerText = "Price: $" + stocks[s];
+}
+
+async function buy() {
+  await fetch("/buy",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({user,stock:selected})});
+  load();
+}
+
+async function sell() {
+  await fetch("/sell",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({user,stock:selected})});
+  load();
 }
 
 function logout() {
-  localStorage.removeItem("stongusUser");
-  location.href = "login.html";
+  localStorage.removeItem("stongus_user");
+  location.href = "landing.html";
 }
+
+const stocksDiv = document.getElementById("stocks");
+load();
+setInterval(load,650);
 </script>
 
 </body>
