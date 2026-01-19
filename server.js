@@ -6,12 +6,27 @@ const path = require("path");
    MIDDLEWARE
 ===================== */
 app.use(express.json());
-app.use(express.static("public"));
 
 /* =====================
-   STOCK ROUTES (PART 1)
+   HOME PAGE (FIXED)
 ===================== */
-const { registerStockRoutes } = require("./stocks");
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "landing.html"));
+});
+
+/* =====================
+   STATIC FILES (HTML)
+===================== */
+app.get("/:page", (req, res, next) => {
+  const file = path.join(__dirname, req.params.page);
+  if (!file.endsWith(".html")) return next();
+  res.sendFile(file);
+});
+
+/* =====================
+   STOCK ROUTES
+===================== */
+const { registerStockRoutes, getPrices } = require("./stocks");
 registerStockRoutes(app);
 
 /* =====================
@@ -43,7 +58,7 @@ app.get("/player", (req, res) => {
 });
 
 /* =====================
-   BUY STOCK
+   BUY
 ===================== */
 app.post("/buy", (req, res) => {
   const { user, stock } = req.body;
@@ -51,12 +66,9 @@ app.post("/buy", (req, res) => {
 
   ensurePlayer(user);
 
-  // get current price
-  const prices = require("./stocks").getPrices?.();
-  const price = prices ? prices[stock] : null;
-  if (!price) return res.json({ ok: false });
-
-  if (players[user].money < price) {
+  const prices = getPrices();
+  const price = prices[stock];
+  if (!price || players[user].money < price) {
     return res.json({ ok: false });
   }
 
@@ -68,7 +80,7 @@ app.post("/buy", (req, res) => {
 });
 
 /* =====================
-   SELL STOCK
+   SELL
 ===================== */
 app.post("/sell", (req, res) => {
   const { user, stock } = req.body;
@@ -80,8 +92,8 @@ app.post("/sell", (req, res) => {
     return res.json({ ok: false });
   }
 
-  const prices = require("./stocks").getPrices?.();
-  const price = prices ? prices[stock] : null;
+  const prices = getPrices();
+  const price = prices[stock];
   if (!price) return res.json({ ok: false });
 
   players[user].money += price;
@@ -95,7 +107,7 @@ app.post("/sell", (req, res) => {
 });
 
 /* =====================
-   FRIENDS DATA
+   FRIENDS
 ===================== */
 app.get("/friends-data", (req, res) => {
   const me = req.query.me;
@@ -103,26 +115,26 @@ app.get("/friends-data", (req, res) => {
 
   ensurePlayer(me);
 
-  const list = Object.keys(players)
-    .filter(p => p !== me)
-    .map(p => ({
-      name: p,
-      money: players[p].money,
-      stocks: Object.keys(players[p].stocks)
-    }));
-
-  res.json(list);
+  res.json(
+    Object.keys(players)
+      .filter(p => p !== me)
+      .map(p => ({
+        name: p,
+        money: players[p].money,
+        stocks: Object.keys(players[p].stocks)
+      }))
+  );
 });
 
 /* =====================
-   HEALTH CHECK
+   HEALTH
 ===================== */
 app.get("/health", (req, res) => {
   res.send("ok");
 });
 
 /* =====================
-   START SERVER
+   START
 ===================== */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
