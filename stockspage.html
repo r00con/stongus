@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Stongus Stock</title>
+<title>Stongus – Stock</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
@@ -25,6 +25,7 @@ body {
 button {
   font-family: 'Press Start 2P', cursive;
   padding: 8px 12px;
+  margin: 4px;
   border: none;
   cursor: pointer;
 }
@@ -43,7 +44,7 @@ button {
   padding: 30px;
   background: #151515;
   display: inline-block;
-  min-width: 300px;
+  min-width: 320px;
 }
 </style>
 </head>
@@ -51,40 +52,69 @@ button {
 <body>
 
 <div id="topbar">
-  <div id="user"></div>
+  <div id="user">Loading...</div>
   <button class="back" onclick="goBack()">Back</button>
 </div>
 
 <div id="content">
   <div class="box">
-    <h2 id="stockName"></h2>
-    <p id="price"></p>
-    <p id="owned"></p>
+    <h2 id="stockName">Loading...</h2>
+    <p id="price">Price: --</p>
+    <p id="owned">You own: 0</p>
 
-    <button class="buy" onclick="buy()">Buy</button>
-    <button class="sell" onclick="sell()">Sell</button>
+    <div>
+      <button class="buy" onclick="buy()">Buy 1</button>
+      <button class="sell" onclick="sell()">Sell 1</button>
+    </div>
   </div>
 </div>
 
 <script>
+/* =====================
+   SAFE BOOTSTRAP
+   ===================== */
 const user = localStorage.getItem("stongus_user");
 const stock = localStorage.getItem("stongus_selected_stock");
 
-if (!user || !stock) location.href = "gamepage.html";
-
-userEl.innerText = user;
-
-async function load() {
-  const stocks = await fetch("/stocks").then(r => r.json());
-  const player = await fetch(`/player?user=${user}`).then(r => r.json());
-
-  stockName.innerText = stock;
-  price.innerText = "Price: $" + stocks[stock];
-
-  const qty = player.stocks[stock] || 0;
-  owned.innerText = `You own: ${qty}`;
+if (!user || !stock) {
+  location.href = "gamepage.html";
 }
 
+document.getElementById("user").innerText = user;
+
+let stockPrice = 0;
+
+/* =====================
+   LOAD DATA
+   ===================== */
+async function load() {
+  try {
+    const stocksRes = await fetch("/stocks");
+    const playerRes = await fetch(`/player?user=${user}`);
+
+    const stocks = await stocksRes.json();
+    const player = await playerRes.json();
+
+    if (!stocks || !stocks[stock] || !player) {
+      console.error("Missing data");
+      return;
+    }
+
+    stockPrice = stocks[stock];
+    const qty = player.stocks[stock] || 0;
+
+    document.getElementById("stockName").innerText = stock;
+    document.getElementById("price").innerText = "Price: $" + stockPrice;
+    document.getElementById("owned").innerText = "You own: " + qty;
+
+  } catch (err) {
+    console.error("Failed to load stock page", err);
+  }
+}
+
+/* =====================
+   ACTIONS
+   ===================== */
 async function buy() {
   await fetch("/buy", {
     method: "POST",
@@ -103,10 +133,16 @@ async function sell() {
   load();
 }
 
+/* =====================
+   NAVIGATION
+   ===================== */
 function goBack() {
   location.href = "gamepage.html";
 }
 
+/* =====================
+   START
+   ===================== */
 load();
 </script>
 
