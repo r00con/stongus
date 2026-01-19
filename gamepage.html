@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Stongus</title>
+<title>Game</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 body{
@@ -9,71 +9,62 @@ body{
   font-family:'Press Start 2P';
   background:
     linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.75)),
-    url("background.png") center/cover no-repeat fixed;
+    url("background.png") center/cover fixed;
   color:white;
 }
-.topbar{
+.top{
   display:flex;
   justify-content:space-between;
   padding:12px;
-  border-bottom:4px solid #333;
   background:rgba(0,0,0,.85);
 }
-button{font-family:'Press Start 2P';}
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  grid-template-columns:repeat(auto-fill,220px);
   gap:15px;
   padding:20px;
 }
 .card{
   border:4px solid #333;
   padding:15px;
-  background:rgba(0,0,0,.75);
+  background:rgba(0,0,0,.8);
   cursor:pointer;
 }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div id="user"></div>
-  <div>
-    $<span id="money">0</span>
-    <button onclick="friends()">Friends</button>
-  </div>
+<div class="top">
+  <span id="user"></span>
+  <span>$<span id="money"></span>
+  <button onclick="friends()">Friends</button></span>
 </div>
 
 <div class="grid" id="stocks"></div>
 
 <script>
-const user=localStorage.getItem("stongus_user")||"LockedIn";
+const user=localStorage.getItem("stongus_user");
+if(!user)location.href="landing.html";
 document.getElementById("user").innerText=user;
 
-let prices={},player={};
-
 async function load(){
-  prices=await (await fetch("/stocks")).json();
-  player=await (await fetch(`/player?user=${user}`)).json();
-  document.getElementById("money").innerText=player.money;
-  render();
-}
+  const prices=await (await fetch("/stocks")).json();
+  const me=await (await fetch(`/player?user=${user}`)).json();
+  document.getElementById("money").innerText=me.money;
 
-function render(){
   const box=document.getElementById("stocks");
   box.innerHTML="";
   Object.keys(prices).forEach(s=>{
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`${s}<br>Price: $${prices[s]}`;
-    div.onclick=()=>{
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`${s}<br>$${prices[s]}`;
+    d.onclick=()=>{
       localStorage.setItem("stongus_selected_stock",s);
       location.href="stockspage.html";
     };
-    box.appendChild(div);
+    box.appendChild(d);
   });
 }
-
 function friends(){location.href="friends.html";}
 load();
 </script>
